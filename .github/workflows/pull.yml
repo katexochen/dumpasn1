@@ -1,0 +1,143 @@
+name: Check upstream for updates
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Check for upstream code changes
+        id: code-changes
+        run: |
+          codeURL="https://www.cs.auckland.ac.nz/~pgut001/dumpasn1.c"
+
+          if ! curl -fsSL $codeURL -o dumpasn1.c ; then
+          echo "Failed to download dumpasn1.c"
+          exit 1
+          fi
+
+          if ! git diff --exit-code ; then
+            echo "Changes detected in code"
+            echo "detected=true" | tee -a "$GITHUB_OUTPUT"
+          else
+            echo "No changes detected in code"
+            echo "detected=false" | tee -a "$GITHUB_OUTPUT"
+          fi
+
+      - name: Test compile
+        if: steps.code-changes.outputs.detected == 'true'
+        run: |
+          gcc -o dumpasn1 dumpasn1.c
+          rm dumpasn1
+
+      - name: Detect new code version
+        if: steps.code-changes.outputs.detected == 'true'
+        id: code-version
+        run: |
+          updateRegex='#define UPDATE_STRING[[:blank:]]+"([[:alnum:][:blank:]]+)"'
+
+          code=$(cat dumpasn1.c)
+
+          if [[ ! $code =~ $updateRegex ]]; then
+            echo "Update string not found in dumpasn1.c"
+            exit 1
+          fi
+
+          update=${BASH_REMATCH[1]}
+          echo "updated: $update"
+
+          version=$(date -d"$update" +%Y%m%d)
+          echo "version: $version"
+
+          if ! grep -q "version ${version}" dumpasn1.c; then
+            echo "Version ${version} not found in dumpasn1.c"
+            exit 1
+          fi
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Update SHA256SUMS
+        if: steps.code-changes.outputs.config == 'true'
+        run: |
+          sha256sum dumpasn1.c dumpasn1.cfg > SHA256SUMS
+
+      - name: Commit code change
+        if: steps.code-changes.outputs.detected == 'true'
+        run: |
+          git config --local user.email "49727155+katexochen@users.noreply.github.com"
+          git config --local user.name "Paul Meyer"
+          git add dumpasn1.c SHA256SUMS
+          git commit -m "Update dumpasn1.c to ${version}"
+          git diff --exit-code
+
+      - name: Check for upstream config changes
+        id: config-changes
+        run: |
+          cfgURL="https://www.cs.auckland.ac.nz/~pgut001/dumpasn1.cfg"
+
+          if ! curl -fsSL $cfgURL -o dumpasn1.cfg ; then
+            echo "Failed to download dumpasn1.cfg"
+            exit 1
+          fi
+
+          if ! git diff --exit-code ; then
+            echo "Changes detected in config"
+            echo "config=true" | tee -a "$GITHUB_OUTPUT"
+          else
+            echo "No changes detected in config"
+            echo "config=false" | tee -a "$GITHUB_OUTPUT"
+          fi
+
+      - name: Detect new config version
+        if: steps.config-changes.outputs.config == 'true'
+        id: config-version
+        run: |
+          updateRegex='([[:digit:]]{8}) if you want it that way.'
+
+          config=$(cat dumpasn1.cfg)
+
+          if [[ ! $config =~ $updateRegex ]]; then
+            echo "Update string not found in dumpasn1.c"
+            exit 1
+          fi
+
+          version=${BASH_REMATCH[1]}
+          echo "version: $version"
+
+          if [[ $(date -d"$version" +%Y%m%d) != "$version" ]]; then
+            echo "Invalid date: $version"
+            exit 1
+          fi
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Update SHA256SUMS
+        if: steps.config-changes.outputs.config == 'true'
+        run: |
+          sha256sum dumpasn1.c dumpasn1.cfg > SHA256SUMS
+
+      - name: Commit config change
+        if: steps.config-changes.outputs.config == 'true'
+        run: |
+          git config --local user.email "49727155+katexochen@users.noreply.github.com"
+          git config --local user.name "Paul Meyer"
+          git add dumpasn1.cfg SHA256SUMS
+          git commit -m "Update dumpasn1.cfg to ${version}"
+          git diff --exit-code
+
+      - name: Open PR
+        if: steps.code-changes.outputs.detected == 'true' || steps.config-changes.outputs.config == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Update source
+          body: ":robot: This PR was automatically created."
+          branch: update
+          branch-suffix: timestamp
+          base: main
