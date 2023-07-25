@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  pull:
+  pull-code:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -70,15 +70,26 @@ jobs:
         run: |
           sha256sum dumpasn1.c dumpasn1.cfg > SHA256SUMS
 
-      - name: Commit code change
+      - name: Open PR
         if: steps.code-changes.outputs.detected == 'true'
-        run: |
-          git config --local user.email "49727155+katexochen@users.noreply.github.com"
-          git config --local user.name "Paul Meyer"
-          git add dumpasn1.c SHA256SUMS
-          git commit -m "Update dumpasn1.c to ${{ steps.code-version.outputs.version }}"
-          git diff --exit-code
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update dumpasn1.c to ${{ steps.code-version.outputs.version }}"
+          title: Update source
+          body: ":robot: This PR was automatically created."
+          branch: update
+          branch-suffix: timestamp
+          base: main
 
+  pull-config:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Check for upstream config changes
         id: config-changes
         run: |
@@ -135,11 +146,12 @@ jobs:
           git diff --exit-code
 
       - name: Open PR
-        if: steps.code-changes.outputs.detected == 'true' || steps.config-changes.outputs.detected == 'true'
+        if: steps.config-changes.outputs.detected == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          title: Update source
+          commit-message: "Update dumpasn1.cfg to ${{ steps.config-version.outputs.version }}"
+          title: Update config
           body: ":robot: This PR was automatically created."
           branch: update
           branch-suffix: timestamp
