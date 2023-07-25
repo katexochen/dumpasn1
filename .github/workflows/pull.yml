@@ -76,7 +76,7 @@ jobs:
           git config --local user.email "49727155+katexochen@users.noreply.github.com"
           git config --local user.name "Paul Meyer"
           git add dumpasn1.c SHA256SUMS
-          git commit -m "Update dumpasn1.c to ${version}"
+          git commit -m "Update dumpasn1.c to ${{ steps.code-version.outputs.version }}"
           git diff --exit-code
 
       - name: Check for upstream config changes
@@ -131,7 +131,7 @@ jobs:
           git config --local user.email "49727155+katexochen@users.noreply.github.com"
           git config --local user.name "Paul Meyer"
           git add dumpasn1.cfg SHA256SUMS
-          git commit -m "Update dumpasn1.cfg to ${version}"
+          git commit -m "Update dumpasn1.cfg to ${{ steps.config-version.outputs.version }}"
           git diff --exit-code
 
       - name: Open PR
