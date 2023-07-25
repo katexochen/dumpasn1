@@ -33,6 +33,12 @@ jobs:
           echo "version=${version}" | tee -a "$GITHUB_OUTPUT"
           echo "fversion=${version}-${ext}" | tee -a "$GITHUB_OUTPUT"
 
+      - name: Confgure git
+        if: steps.version.outputs.update == 'true'
+        run: |
+          git config --local user.email "49727155+katexochen@users.noreply.github.com"
+          git config --local user.name "Paul Meyer"
+
       - name: Tag new version
         if: steps.version.outputs.update == 'true'
         run: |
