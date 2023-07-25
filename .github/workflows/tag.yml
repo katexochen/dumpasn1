@@ -24,11 +24,11 @@ jobs:
             exit 0
           fi
 
-          file=$(echo ${commitMsg} | cut -d' ' -f2)
-          ext=$(echo ${file} | cut -d'.' -f2)
-          version=$(echo ${commitMsg} | cut -d' ' -f4)
+          file=$(echo "${commitMsg}" | cut -d' ' -f2)
+          ext=$(echo "${file}" | cut -d'.' -f2)
+          version=$(echo "${commitMsg}" | cut -d' ' -f4)
 
-          echo "update=true" | tee -a "$GITHUB_OUTPUT
+          echo "update=true" | tee -a "$GITHUB_OUTPUT"
           echo "file=${file}" | tee -a "$GITHUB_OUTPUT"
           echo "version=${version}" | tee -a "$GITHUB_OUTPUT"
           echo "fversion=${version}-${ext}" | tee -a "$GITHUB_OUTPUT"
