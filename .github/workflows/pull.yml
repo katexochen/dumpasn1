@@ -68,7 +68,7 @@ jobs:
       - name: Update SHA256SUMS
         if: steps.code-changes.outputs.detected == 'true'
         run: |
-          sha256sum dumpasn1.c dumpasn1.cfg > SHA256SUMS
+          sha256sum dumpasn1.c dumpasn1.cfg | sort -k2 > SHA256SUMS
 
       - name: Open PR
         if: steps.code-changes.outputs.detected == 'true'
@@ -134,7 +134,7 @@ jobs:
       - name: Update SHA256SUMS
         if: steps.config-changes.outputs.detected == 'true'
         run: |
-          sha256sum dumpasn1.c dumpasn1.cfg > SHA256SUMS
+          sha256sum dumpasn1.c dumpasn1.cfg | sort -k2 > SHA256SUMS
 
       - name: Commit config change
         if: steps.config-changes.outputs.detected == 'true'
