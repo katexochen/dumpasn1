@@ -1,0 +1,65 @@
+name: Tag on update
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Parse commit name
+        id: version
+        run: |
+          commitMsg=$(git log -1 --pretty=%B | head -n 1)
+
+          if [[ $commitMsg != "Update dumpasn1"* ]]; then
+            echo "No version update, skipping."
+            exit 0
+          fi
+
+          file=$(echo "${commitMsg}" | cut -d' ' -f2)
+          ext=$(echo "${file}" | cut -d'.' -f2)
+          version=$(echo "${commitMsg}" | cut -d' ' -f4)
+
+          echo "update=true" | tee -a "$GITHUB_OUTPUT"
+          echo "file=${file}" | tee -a "$GITHUB_OUTPUT"
+          echo "version=v${version}.0.0" | tee -a "$GITHUB_OUTPUT"
+          echo "fversion=${version}-${ext}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Confgure git
+        if: steps.version.outputs.update == 'true'
+        run: |
+          git config --local user.email "49727155+katexochen@users.noreply.github.com"
+          git config --local user.name "Paul Meyer"
+
+      - name: Tag new version
+        if: steps.version.outputs.update == 'true'
+        run: |
+          git tag \
+            -a ${{ steps.version.outputs.version }} \
+            -m "Release ${{ steps.version.outputs.version }}"
+          git push origin ${{ steps.version.outputs.version }}
+
+      - name: Tag new fversion
+        if: steps.version.outputs.update == 'true'
+        run: |
+          git tag \
+            -a ${{ steps.version.outputs.fversion }} \
+            -m "Release ${{ steps.version.outputs.file }} at ${{ steps.version.outputs.version }}"
+          git push origin ${{ steps.version.outputs.fversion }}
+
+      - name: Create a GitHub release
+        if: steps.version.outputs.update == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.version.outputs.version }}
+          name: "Release ${{ steps.version.outputs.version }}"
