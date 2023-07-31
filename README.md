@@ -1,7 +1,7 @@
 # `dumpasn1` - display and debug ASN.1 data
 
 > [!NOTE]\
-> Copyright Peter Gutmann <pgut001@cs.auckland.ac.nz>
+> Copyright Peter Gutmann (<pgut001@cs.auckland.ac.nz>)
 
 This is a mirror of Peter Gutmann's `dumpasn1`, adding versioning of both code and config
 and automated updates from upstream.
@@ -103,6 +103,6 @@ this repository, so you can always follow the original license of the source if 
 
 ## Related
 
-- [Peter Gutmann's website](https://www.cs.auckland.ac.nz/~pgut001/#standards) has more information on `dumpasn1`,
+- [**Peter Gutmann's website**](https://www.cs.auckland.ac.nz/~pgut001/#standards) has more information on `dumpasn1`,
      security standards and an X.509 style guide.
-- [ASN.1 online decoder](http://lapo.it/asn1js/) provides a nice interface to debug your ASN.1 in browser.
+- [**ASN.1 online decoder**](http://lapo.it/asn1js/) provides a nice interface to debug your ASN.1 in browser.
