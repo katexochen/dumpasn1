@@ -451,6 +451,10 @@ static const char *configPaths[] = {
 	/* General environment-based paths */
 	"$DUMPASN1_PATH/",
 
+  #ifdef DUMPASN1_CONFIG_PATH
+	DUMPASN1_CONFIG_PATH,
+  #endif /* DUMPASN1_CONFIG_PATH */
+
 	NULL
 	};
 #endif /* OS-specific search paths */
