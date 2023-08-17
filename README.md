@@ -106,3 +106,9 @@ this repository, so you can always follow the original license of the source if 
 - [**Peter Gutmann's website**](https://www.cs.auckland.ac.nz/~pgut001/#standards) has more information on `dumpasn1`,
      security standards and an X.509 style guide.
 - [**ASN.1 online decoder**](http://lapo.it/asn1js/) provides a nice interface to debug your ASN.1 in browser.
+
+<p align="center">
+<a href="https://repology.org/project/dumpasn1/versions">
+<img src="https://repology.org/badge/vertical-allrepos/dumpasn1.svg?columns=4" alt="Packaging status">
+</a>
+</p>
